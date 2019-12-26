@@ -1,3 +1,5 @@
+const Customer = require('../models/customerModel');
+
 /**
  * Function used to get all customers
  * @function
@@ -38,15 +40,24 @@ exports.getCustomer = (req, res, next) => {
  * @param {object} req - request object
  * @param {object} res - response object
  * @param {object} next - response object
- * @return  {Object} result
+ * @return  {Object} undefined
  */
-exports.createCustomer = (req, res, next) => {
-  res.status(200).json({
-    status: 'success',
-    data: {
-      message: 'customer created successfully'
-    }
-  });
+exports.createCustomer = async (req, res, next) => {
+  try {
+    const newCustomer = await Customer.create(req.body);
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        data: newCustomer
+      }
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      msg: err
+    });
+  }
 };
 
 /**
