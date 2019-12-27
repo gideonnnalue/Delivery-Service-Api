@@ -1,4 +1,5 @@
 const Customer = require('../models/customerModel');
+const APIFeatures = require('../utils/APIFeatures');
 
 /**
  * Function used to get all customers
@@ -8,13 +9,29 @@ const Customer = require('../models/customerModel');
  * @param {object} next - response object
  * @return  {Object} result
  */
-exports.getAllCustomers = (req, res, next) => {
-  res.status(200).json({
-    status: 'success',
-    data: {
-      message: 'customers fetched successfully'
-    }
-  });
+exports.getAllCustomers = async (req, res, next) => {
+  try {
+    const features = new APIFeatures(Customer.find({}), req.query)
+      .filter()
+      .sort()
+      .limitField()
+      .pagination();
+
+    const customers = await features.query;
+
+    res.status(200).json({
+      status: 'success',
+      result: customers.length,
+      data: {
+        customers
+      }
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      msg: err
+    });
+  }
 };
 
 /**
@@ -25,13 +42,21 @@ exports.getAllCustomers = (req, res, next) => {
  * @param {object} next - response object
  * @return  {Object} result
  */
-exports.getCustomer = (req, res, next) => {
-  res.status(200).json({
-    status: 'success',
-    data: {
-      message: 'customer fetched successfully'
-    }
-  });
+exports.getCustomer = async (req, res, next) => {
+  try {
+    const customer = await Customer.findById(req.params.id);
+    res.status(200).json({
+      status: 'success',
+      data: {
+        customer
+      }
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      msg: err
+    });
+  }
 };
 
 /**
@@ -68,13 +93,20 @@ exports.createCustomer = async (req, res, next) => {
  * @param {object} next - response object
  * @return  {Object} result
  */
-exports.deleteCustomer = (req, res, next) => {
-  res.status(200).json({
-    status: 'success',
-    data: {
-      message: 'customer deleted successfully'
-    }
-  });
+exports.deleteCustomer = async (req, res, next) => {
+  try {
+    await Customer.findByIdAndDelete(req.params.id);
+
+    res.status(204).json({
+      status: 'success',
+      data: null
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      msg: err
+    });
+  }
 };
 
 /**
@@ -85,11 +117,22 @@ exports.deleteCustomer = (req, res, next) => {
  * @param {object} next - response object
  * @return  {Object} result
  */
-exports.updateCustomer = (req, res, next) => {
-  res.status(200).json({
-    status: 'success',
-    data: {
-      message: 'customer updated successfully'
-    }
-  });
+exports.updateCustomer = async (req, res, next) => {
+  try {
+    const customer = await Customer.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    });
+    res.status(201).json({
+      status: 'success',
+      data: {
+        customer
+      }
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      msg: err
+    });
+  }
 };
