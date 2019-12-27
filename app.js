@@ -7,7 +7,10 @@ const customerRoutes = require('./routes/customerRoutes');
 const app = express();
 
 // INITIALIZE EXPRESS MIDDLEWARES
-app.use(morgan('dev'));
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
+
 app.use(express.json());
 
 app.get('/', (req, res) => res.send('Hello'));
@@ -15,8 +18,4 @@ app.get('/', (req, res) => res.send('Hello'));
 // INITIALIZE ROUTES
 app.use('/api/v1/customers', customerRoutes);
 
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`App listening on port ${PORT}...`);
-});
+module.exports = app;
