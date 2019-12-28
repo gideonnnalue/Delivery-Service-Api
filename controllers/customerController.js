@@ -1,5 +1,7 @@
 const Customer = require('../models/customerModel');
 const APIFeatures = require('../utils/APIFeatures');
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/AppError');
 
 /**
  * Function used to get all customers
@@ -9,30 +11,23 @@ const APIFeatures = require('../utils/APIFeatures');
  * @param {object} next - response object
  * @return  {Object} result
  */
-exports.getAllCustomers = async (req, res, next) => {
-  try {
-    const features = new APIFeatures(Customer.find({}), req.query)
-      .filter()
-      .sort()
-      .limitField()
-      .pagination();
+exports.getAllCustomers = catchAsync(async (req, res, next) => {
+  const features = new APIFeatures(Customer.find({}), req.query)
+    .filter()
+    .sort()
+    .limitField()
+    .pagination();
 
-    const customers = await features.query;
+  const customers = await features.query;
 
-    res.status(200).json({
-      status: 'success',
-      result: customers.length,
-      data: {
-        customers
-      }
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: 'fail',
-      msg: err
-    });
-  }
-};
+  res.status(200).json({
+    status: 'success',
+    result: customers.length,
+    data: {
+      customers
+    }
+  });
+});
 
 /**
  * Function used to get a single customer
@@ -42,22 +37,19 @@ exports.getAllCustomers = async (req, res, next) => {
  * @param {object} next - response object
  * @return  {Object} result
  */
-exports.getCustomer = async (req, res, next) => {
-  try {
-    const customer = await Customer.findById(req.params.id);
-    res.status(200).json({
-      status: 'success',
-      data: {
-        customer
-      }
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: 'fail',
-      msg: err
-    });
+exports.getCustomer = catchAsync(async (req, res, next) => {
+  const customer = await Customer.findById(req.params.id);
+
+  if (!customer) {
+    return next(new AppError('No Customer found with that ID', 404));
   }
-};
+  res.status(200).json({
+    status: 'success',
+    data: {
+      customer
+    }
+  });
+});
 
 /**
  * Function used to create a customer
@@ -67,23 +59,16 @@ exports.getCustomer = async (req, res, next) => {
  * @param {object} next - response object
  * @return  {Object} undefined
  */
-exports.createCustomer = async (req, res, next) => {
-  try {
-    const newCustomer = await Customer.create(req.body);
+exports.createCustomer = catchAsync(async (req, res, next) => {
+  const newCustomer = await Customer.create(req.body);
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        data: newCustomer
-      }
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: 'fail',
-      msg: err
-    });
-  }
-};
+  res.status(200).json({
+    status: 'success',
+    data: {
+      data: newCustomer
+    }
+  });
+});
 
 /**
  * Function used to delete a customer
@@ -93,21 +78,17 @@ exports.createCustomer = async (req, res, next) => {
  * @param {object} next - response object
  * @return  {Object} result
  */
-exports.deleteCustomer = async (req, res, next) => {
-  try {
-    await Customer.findByIdAndDelete(req.params.id);
+exports.deleteCustomer = catchAsync(async (req, res, next) => {
+  const customer = await Customer.findByIdAndDelete(req.params.id);
 
-    res.status(204).json({
-      status: 'success',
-      data: null
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: 'fail',
-      msg: err
-    });
+  if (!customer) {
+    return next(new AppError('No customer found with that ID', 404));
   }
-};
+  res.status(204).json({
+    status: 'success',
+    data: null
+  });
+});
 
 /**
  * Function used to update a customer's data
@@ -117,22 +98,15 @@ exports.deleteCustomer = async (req, res, next) => {
  * @param {object} next - response object
  * @return  {Object} result
  */
-exports.updateCustomer = async (req, res, next) => {
-  try {
-    const customer = await Customer.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true
-    });
-    res.status(201).json({
-      status: 'success',
-      data: {
-        customer
-      }
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: 'fail',
-      msg: err
-    });
-  }
-};
+exports.updateCustomer = catchAsync(async (req, res, next) => {
+  const customer = await Customer.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true
+  });
+  res.status(201).json({
+    status: 'success',
+    data: {
+      customer
+    }
+  });
+});
