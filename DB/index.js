@@ -31,6 +31,7 @@ const connect = () => {
 };
 
 const close = () => {
+  // return mongoose.connection.close()
   return mongoose.disconnect();
 };
 
