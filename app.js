@@ -1,6 +1,12 @@
 const express = require('express');
 const morgan = require('morgan');
 
+// SECURITY IMPORTS
+const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
+const hpp = require('hpp');
+
 // UTILS
 const AppError = require('./utils/AppError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -12,11 +18,30 @@ const userRoutes = require('./routes/userRoutes');
 const app = express();
 
 // INITIALIZE EXPRESS MIDDLEWARES
+// Set security HTTP headers
+app.use(helmet());
+
+// Development logging
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-app.use(express.json());
+// Body parser reading data from req.body
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+
+// Data sanitization against NoSQL query attacks
+app.use(mongoSanitize());
+
+// Data sanitizaton against XSS
+app.use(xss());
+
+// Prevent parameter pollution
+app.use(
+  hpp({
+    whitelist: ['country', 'state', 'city', 'createdAt']
+  })
+);
 
 app.get('/', (req, res) => res.send('Hello'));
 
