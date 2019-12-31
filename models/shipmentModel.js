@@ -14,6 +14,11 @@ const shipmentSchema = new mongoose.Schema({
   senderPhoneNumber: {
     type: String
   },
+  customer: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Customer',
+    required: [true, 'This Shipment must belong to a Customer!']
+  },
   parcelName: {
     type: String,
     required: [true, 'A Shipment must have a parcel name'],
@@ -90,6 +95,14 @@ const shipmentSchema = new mongoose.Schema({
     type: Date,
     default: Date.now()
   }
+});
+
+shipmentSchema.pre(/^find/, function(next) {
+  this.populate({
+    path: 'customer',
+    select: '-__v -createdAt'
+  });
+  next();
 });
 
 const Shipment = mongoose.model('Shipment', shipmentSchema);
