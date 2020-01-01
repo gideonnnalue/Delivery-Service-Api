@@ -47,7 +47,7 @@ const customerSchema = new mongoose.Schema(
 );
 
 // Virtual populate
-customerSchema.virtual('shipments', {
+customerSchema.virtual('shipment', {
   ref: 'Shipment',
   foreignField: 'customer',
   localField: '_id'

@@ -1,5 +1,6 @@
 const express = require('express');
 const morgan = require('morgan');
+const cors = require('cors');
 
 // SECURITY IMPORTS
 const helmet = require('helmet');
@@ -19,6 +20,12 @@ const shipmentRoutes = require('./routes/shipmentRoutes');
 const app = express();
 
 // INITIALIZE EXPRESS MIDDLEWARES
+// Implement cors
+app.use(cors());
+
+// Access-Control-Allow-Origin *
+app.options('*', cors());
+
 // Set security HTTP headers
 app.use(helmet());
 
